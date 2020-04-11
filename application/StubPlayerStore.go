@@ -2,7 +2,7 @@ package main
 
 type StubPlayerStore struct {
 	score  map[string]int
-	league []Player
+	league League
 }
 
 func (i *StubPlayerStore) GetPlayerScore(name string) int {
@@ -13,10 +13,10 @@ func (i *StubPlayerStore) PostPlayerScore(name string) {
 	i.score[name]++
 }
 
-func (s *StubPlayerStore) GetLeagueTable() []Player {
+func (s *StubPlayerStore) GetLeagueTable() League {
 	return s.league
 }
 
 func NewStubPlayerStore() *StubPlayerStore {
-	return &StubPlayerStore{map[string]int{}, []Player{}}
+	return &StubPlayerStore{map[string]int{}, League{}}
 }

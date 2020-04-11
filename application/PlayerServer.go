@@ -10,7 +10,7 @@ import (
 type PlayerStore interface {
 	GetPlayerScore(name string) int
 	PostPlayerScore(name string)
-	GetLeagueTable() []Player
+	GetLeagueTable() League
 }
 
 type Player struct {

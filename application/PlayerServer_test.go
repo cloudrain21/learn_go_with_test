@@ -151,25 +151,25 @@ func assertStatus(t *testing.T, got, want int) {
 	}
 }
 
-func TestFileSystemStore(t *testing.T) {
-	createTempFile := func(t *testing.T, data string) (io.ReadWriteSeeker, func()) {
-		t.Helper()
+func CreateTempFile(t *testing.T, data string) (io.ReadWriteSeeker, func()) {
+	t.Helper()
 
-		tmpfile, err := ioutil.TempFile("", "data_tmpfile")
-		assert.Equal(t, nil, err)
+	tmpfile, err := ioutil.TempFile("", "data_tmpfile")
+	assert.Equal(t, nil, err)
 
-		tmpfile.Write([]byte(data))
+	tmpfile.Write([]byte(data))
 
-		removeFunc := func() {
-			tmpfile.Close()
-			os.Remove(tmpfile.Name())
-		}
-
-		return tmpfile, removeFunc
+	removeFunc := func() {
+		tmpfile.Close()
+		os.Remove(tmpfile.Name())
 	}
 
+	return tmpfile, removeFunc
+}
+
+func TestFileSystemStore(t *testing.T) {
 	t.Run("/league from a reader", func(t *testing.T) {
-		database, removeDatabase := createTempFile(t, `[
+		database, removeDatabase := CreateTempFile(t, `[
             {"Name": "Cleo", "Wins": 10},
             {"Name": "Chris", "Wins": 33}]`)
 
@@ -177,19 +177,19 @@ func TestFileSystemStore(t *testing.T) {
 
 		store := FileSystemPlayerStore{database}
 
-		got := store.GetLeague()
+		got := store.GetLeagueTable()
 
 		want := League{
 			{"Cleo", 10},
 			{"Chris", 33},
 		}
-		got = store.GetLeague()
+		got = store.GetLeagueTable()
 
 		assert.Equal(t, got, want)
 	})
 
 	t.Run("get player score", func(t *testing.T) {
-		database, removeFunc := createTempFile(t, `[
+		database, removeFunc := CreateTempFile(t, `[
         {"Name": "Cleo", "Wins": 10},
         {"Name": "Chris", "Wins": 33}]`)
 
@@ -204,7 +204,7 @@ func TestFileSystemStore(t *testing.T) {
 	})
 
 	t.Run("poset player score", func(t *testing.T) {
-		database, removeFunc := createTempFile(t, `[
+		database, removeFunc := CreateTempFile(t, `[
         {"Name": "Cleo", "Wins": 10},
         {"Name": "Chris", "Wins": 33}]`)
 
@@ -221,7 +221,7 @@ func TestFileSystemStore(t *testing.T) {
 	})
 
 	t.Run("poset player score", func(t *testing.T) {
-		database, removeFunc := createTempFile(t, `[
+		database, removeFunc := CreateTempFile(t, `[
         {"Name": "Cleo", "Wins": 10},
         {"Name": "Chris", "Wins": 33}]`)
 
