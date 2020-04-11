@@ -1,9 +1,13 @@
-package main
+package mytestapp
 
 import (
 	"encoding/json"
-	"fmt"
+	"errors"
 	"io"
+)
+
+var (
+	ErrJsonParse = errors.New("json parsing error")
 )
 
 type League []Player
@@ -12,7 +16,7 @@ func NewLeague(rdr io.Reader) (League, error) {
 	var league League
 	err := json.NewDecoder(rdr).Decode(&league)
 	if err != nil {
-		err = fmt.Errorf("problem parsing league, %v", err)
+		return nil, ErrJsonParse
 	}
 
 	return league, err

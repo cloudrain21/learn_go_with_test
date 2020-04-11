@@ -1,4 +1,4 @@
-package main
+package mytestapp
 
 type StubPlayerStore struct {
 	score  map[string]int

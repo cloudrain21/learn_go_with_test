@@ -1,4 +1,4 @@
-package main
+package mytestapp
 
 import (
 	"encoding/json"
@@ -175,17 +175,17 @@ func TestFileSystemStore(t *testing.T) {
 
 		defer removeDatabase()
 
-		store := FileSystemPlayerStore{database}
+		store, _ := NewFileSystemPlayerStore(database)
 
 		got := store.GetLeagueTable()
 
 		want := League{
-			{"Cleo", 10},
 			{"Chris", 33},
+			{"Cleo", 10},
 		}
 		got = store.GetLeagueTable()
 
-		assert.Equal(t, got, want)
+		assert.Equal(t, want, got)
 	})
 
 	t.Run("get player score", func(t *testing.T) {
@@ -195,7 +195,7 @@ func TestFileSystemStore(t *testing.T) {
 
 		defer removeFunc()
 
-		store := FileSystemPlayerStore{database}
+		store, _ := NewFileSystemPlayerStore(database)
 
 		got := store.GetPlayerScore("Chris")
 		want := 33
@@ -210,7 +210,7 @@ func TestFileSystemStore(t *testing.T) {
 
 		defer removeFunc()
 
-		store := FileSystemPlayerStore{database}
+		store, _ := NewFileSystemPlayerStore(database)
 
 		store.PostPlayerScore("Chris")
 
@@ -220,14 +220,15 @@ func TestFileSystemStore(t *testing.T) {
 		assert.Equal(t, want, got)
 	})
 
-	t.Run("poset player score", func(t *testing.T) {
+	t.Run("post player score", func(t *testing.T) {
 		database, removeFunc := CreateTempFile(t, `[
         {"Name": "Cleo", "Wins": 10},
         {"Name": "Chris", "Wins": 33}]`)
 
 		defer removeFunc()
 
-		store := FileSystemPlayerStore{database}
+		store, err := NewFileSystemPlayerStore(database)
+		assert.Equal(t, nil, err)
 
 		store.PostPlayerScore("Pepper")
 
@@ -236,4 +237,35 @@ func TestFileSystemStore(t *testing.T) {
 
 		assert.Equal(t, want, got)
 	})
+
+	t.Run("json parsing error", func(t *testing.T) {
+		database, removeFunc := CreateTempFile(t, `[
+        {"Name": "Cleo", "Wins": 10,
+        {"Name": "Chris", "Wins": 33}]`)
+
+		defer removeFunc()
+
+		_, err := NewFileSystemPlayerStore(database)
+		assert.Equal(t, ErrJsonParse, err)
+	})
+
+	t.Run("sorting", func(t *testing.T) {
+		database, removeDatabase := CreateTempFile(t, `[
+            {"Name": "Cleo", "Wins": 10},
+            {"Name": "Chris", "Wins": 33}]`)
+
+		defer removeDatabase()
+
+		store, _ := NewFileSystemPlayerStore(database)
+
+		got := store.GetLeagueTable()
+
+		want := League{
+			{"Chris", 33},
+			{"Cleo", 10},
+		}
+
+		assert.Equal(t, want, got)
+	})
+
 }
