@@ -6,6 +6,7 @@ $ go test ./...
 $ ls go.mod go.sum
 $ cat go.mod
 $ go list -m all
+$ go mod tidy
 ```
 
 Maintain go.mod and go.sum in github.com
