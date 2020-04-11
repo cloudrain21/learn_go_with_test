@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -22,7 +23,9 @@ func TestGETPlayers(t *testing.T) {
 
 		response := httptest.NewRecorder()
 		server.ServeHTTP(response, newGetScoreRequest(player))
-		assertStatus(t, response.Code, http.StatusOK)
+
+		assert.Equal(t, response.Code, http.StatusOK)
+		//assertStatus(t, response.Code, http.StatusOK)
 
 		assertResponseBody(t, response.Body.String(), "3")
 	})
@@ -66,7 +69,6 @@ func TestGETPlayers(t *testing.T) {
 		if err != nil {
 			t.Fatalf("decode error : %q : %v\n", response.Body, err)
 		}
-		fmt.Printf("%v\n", got)
 
 		assertStatus(t, response.Code, http.StatusOK)
 	})
@@ -84,6 +86,8 @@ func TestGETPlayers(t *testing.T) {
 		response := httptest.NewRecorder()
 
 		server.ServeHTTP(response, request)
+
+		assert.Equal(t, "application/json", response.Header().Get("content-type"))
 
 		var got []Player
 		err := json.NewDecoder(response.Body).Decode(&got)

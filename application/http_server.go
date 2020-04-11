@@ -42,12 +42,20 @@ func (i *InMemoryPlayerStore) PostPlayerScore(name string) {
 	i.score[name]++
 }
 
+func (i *InMemoryPlayerStore) GetLeagueTable() []Player {
+	return i.league
+}
+
 func (i *StubPlayerStore) GetPlayerScore(name string) int {
 	return i.score[name]
 }
 
 func (i *StubPlayerStore) PostPlayerScore(name string) {
 	i.score[name]++
+}
+
+func (s *StubPlayerStore) GetLeagueTable() []Player {
+	return s.league
 }
 
 //func (p *PlayerServer)ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -61,15 +69,8 @@ func (p *PlayerServer) leagueHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("content-type", "application/json")
 	w.WriteHeader(http.StatusOK)
-}
-
-func (s *StubPlayerStore) GetLeagueTable() []Player {
-	return s.league
-}
-
-func (i *InMemoryPlayerStore) GetLeagueTable() []Player {
-	return i.league
 }
 
 func (p *PlayerServer) playerHandler(w http.ResponseWriter, r *http.Request) {
@@ -118,7 +119,14 @@ func NewInMemoryPlayerStore() *InMemoryPlayerStore {
 }
 
 func main() {
-	server := NewPlayerServer(NewStubPlayerStore())
+	league := []Player{
+		{"Cleo", 32},
+		{"Chris", 20},
+		{"Tiest", 14},
+	}
+
+	store := &StubPlayerStore{nil, league}
+	server := NewPlayerServer(store)
 	if err := http.ListenAndServe(":9000", server); err != nil {
 		log.Fatalf("error : %v", err)
 	}
