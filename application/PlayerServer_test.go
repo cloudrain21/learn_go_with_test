@@ -4,8 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/stretchr/testify/assert"
+	"io"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"reflect"
 	"testing"
 )
@@ -64,7 +67,7 @@ func TestGETPlayers(t *testing.T) {
 
 		server.ServeHTTP(response, request)
 
-		var got []Player
+		var got League
 		err := json.NewDecoder(response.Body).Decode(&got)
 		if err != nil {
 			t.Fatalf("decode error : %q : %v\n", response.Body, err)
@@ -74,7 +77,7 @@ func TestGETPlayers(t *testing.T) {
 	})
 
 	t.Run("league table", func(t *testing.T) {
-		wantedLeague := []Player{
+		wantedLeague := League{
 			{"Cleo", 32},
 			{"Chris", 20},
 			{"Tiest", 14},
@@ -89,7 +92,7 @@ func TestGETPlayers(t *testing.T) {
 
 		assert.Equal(t, "application/json", response.Header().Get("content-type"))
 
-		var got []Player
+		var got League
 		err := json.NewDecoder(response.Body).Decode(&got)
 		if err != nil {
 			t.Fatalf("decode fail : %v\n", err)
@@ -100,6 +103,27 @@ func TestGETPlayers(t *testing.T) {
 		if !reflect.DeepEqual(wantedLeague, got) {
 			t.Errorf("want : %v got : %v\n", wantedLeague, got)
 		}
+	})
+
+	t.Run("in-memory league", func(t *testing.T) {
+		store := NewInMemoryPlayerStore()
+		server := NewPlayerServer(store)
+
+		server.ServeHTTP(httptest.NewRecorder(), newPostWinRequest("dplee"))
+
+		request := httptest.NewRequest(http.MethodGet, "/league", nil)
+		response := httptest.NewRecorder()
+
+		server.ServeHTTP(response, request)
+
+		want := League{
+			{"dplee", 1},
+		}
+		var got League
+		err := json.NewDecoder(response.Body).Decode(&got)
+		assert.Equal(t, err, nil)
+
+		assert.Equal(t, want, got)
 	})
 }
 
@@ -125,4 +149,91 @@ func assertStatus(t *testing.T, got, want int) {
 	if got != want {
 		t.Fatalf("want : %d got : %d\n", want, got)
 	}
+}
+
+func TestFileSystemStore(t *testing.T) {
+	createTempFile := func(t *testing.T, data string) (io.ReadWriteSeeker, func()) {
+		t.Helper()
+
+		tmpfile, err := ioutil.TempFile("", "data_tmpfile")
+		assert.Equal(t, nil, err)
+
+		tmpfile.Write([]byte(data))
+
+		removeFunc := func() {
+			tmpfile.Close()
+			os.Remove(tmpfile.Name())
+		}
+
+		return tmpfile, removeFunc
+	}
+
+	t.Run("/league from a reader", func(t *testing.T) {
+		database, removeDatabase := createTempFile(t, `[
+            {"Name": "Cleo", "Wins": 10},
+            {"Name": "Chris", "Wins": 33}]`)
+
+		defer removeDatabase()
+
+		store := FileSystemPlayerStore{database}
+
+		got := store.GetLeague()
+
+		want := League{
+			{"Cleo", 10},
+			{"Chris", 33},
+		}
+		got = store.GetLeague()
+
+		assert.Equal(t, got, want)
+	})
+
+	t.Run("get player score", func(t *testing.T) {
+		database, removeFunc := createTempFile(t, `[
+        {"Name": "Cleo", "Wins": 10},
+        {"Name": "Chris", "Wins": 33}]`)
+
+		defer removeFunc()
+
+		store := FileSystemPlayerStore{database}
+
+		got := store.GetPlayerScore("Chris")
+		want := 33
+
+		assert.Equal(t, want, got)
+	})
+
+	t.Run("poset player score", func(t *testing.T) {
+		database, removeFunc := createTempFile(t, `[
+        {"Name": "Cleo", "Wins": 10},
+        {"Name": "Chris", "Wins": 33}]`)
+
+		defer removeFunc()
+
+		store := FileSystemPlayerStore{database}
+
+		store.PostPlayerScore("Chris")
+
+		got := store.GetPlayerScore("Chris")
+		want := 34
+
+		assert.Equal(t, want, got)
+	})
+
+	t.Run("poset player score", func(t *testing.T) {
+		database, removeFunc := createTempFile(t, `[
+        {"Name": "Cleo", "Wins": 10},
+        {"Name": "Chris", "Wins": 33}]`)
+
+		defer removeFunc()
+
+		store := FileSystemPlayerStore{database}
+
+		store.PostPlayerScore("Pepper")
+
+		got := store.GetPlayerScore("Pepper")
+		want := 1
+
+		assert.Equal(t, want, got)
+	})
 }

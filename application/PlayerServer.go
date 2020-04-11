@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"path"
 )
@@ -22,40 +21,6 @@ type Player struct {
 type PlayerServer struct {
 	store PlayerStore
 	http.Handler
-}
-
-type InMemoryPlayerStore struct {
-	score  map[string]int
-	league []Player
-}
-
-type StubPlayerStore struct {
-	score  map[string]int
-	league []Player
-}
-
-func (i *InMemoryPlayerStore) GetPlayerScore(name string) int {
-	return i.score[name]
-}
-
-func (i *InMemoryPlayerStore) PostPlayerScore(name string) {
-	i.score[name]++
-}
-
-func (i *InMemoryPlayerStore) GetLeagueTable() []Player {
-	return i.league
-}
-
-func (i *StubPlayerStore) GetPlayerScore(name string) int {
-	return i.score[name]
-}
-
-func (i *StubPlayerStore) PostPlayerScore(name string) {
-	i.score[name]++
-}
-
-func (s *StubPlayerStore) GetLeagueTable() []Player {
-	return s.league
 }
 
 //func (p *PlayerServer)ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -108,26 +73,4 @@ func NewPlayerServer(store PlayerStore) *PlayerServer {
 	p.Handler = router
 
 	return p
-}
-
-func NewStubPlayerStore() *StubPlayerStore {
-	return &StubPlayerStore{map[string]int{}, []Player{}}
-}
-
-func NewInMemoryPlayerStore() *InMemoryPlayerStore {
-	return &InMemoryPlayerStore{map[string]int{}, []Player{}}
-}
-
-func main() {
-	league := []Player{
-		{"Cleo", 32},
-		{"Chris", 20},
-		{"Tiest", 14},
-	}
-
-	store := &StubPlayerStore{nil, league}
-	server := NewPlayerServer(store)
-	if err := http.ListenAndServe(":9000", server); err != nil {
-		log.Fatalf("error : %v", err)
-	}
 }
