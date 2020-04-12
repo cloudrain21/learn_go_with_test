@@ -8,17 +8,19 @@ import (
 )
 
 func TestFileSystem(t *testing.T) {
-	t.Run("stub store", func(t *testing.T) {
+	t.Run("filesystem store", func(t *testing.T) {
 		filename := "/tmp/test.json"
-
 		dbfile, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE, 0666)
 		assert.Equal(t, nil, err)
 
-		sto, _ := store.NewFileSystemPlayerStore(dbfile)
+		sto := store.CreateFileSystemPlayerStore(dbfile)
+		assert.Equal(t, nil, err)
+
+		sto.PostPlayerScore("rain")
 		sto.PostPlayerScore("rain")
 
 		got := sto.GetPlayerScore("rain")
-		want := 1
+		want := 2
 
 		assert.Equal(t, want, got)
 	})

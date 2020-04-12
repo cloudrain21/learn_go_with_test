@@ -12,12 +12,16 @@ type FileSystemPlayerStore struct {
 }
 
 func NewFileSystemPlayerStore(d io.ReadWriteSeeker) (*FileSystemPlayerStore, error) {
-	d.Seek(0,0)
+	d.Seek(0, 0)
 	league, err := NewLeague(d)
 	if err != nil {
 		return nil, err
 	}
 	return &FileSystemPlayerStore{d, league}, nil
+}
+
+func CreateFileSystemPlayerStore(d io.ReadWriteSeeker) *FileSystemPlayerStore {
+	return &FileSystemPlayerStore{d, League{}}
 }
 
 func (f *FileSystemPlayerStore) GetLeagueTable() League {
