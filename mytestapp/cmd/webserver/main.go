@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/cloudrain21/learn_go_with_test/mytestapp/domain/server"
-	"github.com/cloudrain21/learn_go_with_test/mytestapp/domain/server/store"
+	"github.com/cloudrain21/learn_go_with_test/mytestapp/server"
+	"github.com/cloudrain21/learn_go_with_test/mytestapp/server/store"
 	"log"
 	"net/http"
 	"os"

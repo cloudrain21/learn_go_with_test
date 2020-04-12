@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/cloudrain21/learn_go_with_test/mytestapp/server/store"
 	"github.com/stretchr/testify/assert"
 	"io"
 	"io/ioutil"
@@ -11,7 +12,6 @@ import (
 	"os"
 	"reflect"
 	"testing"
-	"github.com/cloudrain21/learn_go_with_test/mytestapp/domain/server/store"
 )
 
 func TestGETPlayers(t *testing.T) {
