@@ -22,7 +22,7 @@ func NewLeague(rdr io.Reader) (League, error) {
 	return league, err
 }
 
-func (l League) Find(name string) *Player {
+func (l League) find(name string) *Player {
 	for i, p := range l {
 		if name == p.Name {
 			return &l[i]

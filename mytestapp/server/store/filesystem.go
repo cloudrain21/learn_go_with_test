@@ -32,7 +32,7 @@ func (f *FileSystemPlayerStore) GetLeagueTable() League {
 }
 
 func (f *FileSystemPlayerStore) GetPlayerScore(name string) int {
-	p := f.GetLeagueTable().Find(name)
+	p := f.GetLeagueTable().find(name)
 	if p == nil {
 		return 0
 	}
@@ -40,7 +40,7 @@ func (f *FileSystemPlayerStore) GetPlayerScore(name string) int {
 }
 
 func (f *FileSystemPlayerStore) PostPlayerScore(name string) {
-	player := f.league.Find(name)
+	player := f.league.find(name)
 	if player == nil {
 		f.league = append(f.league, Player{name, 0})
 		player = &f.league[len(f.league)-1]
